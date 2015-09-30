@@ -70,6 +70,7 @@ public class DraggableView extends RelativeLayout {
   private boolean enableClickToMaximize;
   private boolean enableClickToMinimize;
   private boolean touchEnabled;
+  private boolean drawAsIs;
 
   private DraggableListener listener;
 
@@ -85,6 +86,13 @@ public class DraggableView extends RelativeLayout {
   public DraggableView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
     initializeAttributes(attrs);
+  }
+
+  public void setDrawAsIs(boolean enabled) {
+    if (enabled != drawAsIs) {
+      drawAsIs = enabled;
+      requestLayout();
+    }
   }
 
   /**
@@ -326,7 +334,7 @@ public class DraggableView extends RelativeLayout {
    * @return true if the view is going to process the touch event or false if not.
    */
   @Override public boolean onInterceptTouchEvent(MotionEvent ev) {
-    if (!isEnabled()) {
+    if (!isEnabled() || !isTouchEnabled() || drawAsIs) {
       return false;
     }
     switch (MotionEventCompat.getActionMasked(ev) & MotionEventCompat.ACTION_MASK) {
@@ -355,6 +363,9 @@ public class DraggableView extends RelativeLayout {
    * @return true if the touch event is realized over the drag or second view.
    */
   @Override public boolean onTouchEvent(MotionEvent ev) {
+    if (!isEnabled() || !isTouchEnabled() || drawAsIs) {
+      return false;
+    }
     int actionMasked = MotionEventCompat.getActionMasked(ev);
     if ((actionMasked & MotionEventCompat.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
       activePointerId = MotionEventCompat.getPointerId(ev, actionMasked);
@@ -422,7 +433,7 @@ public class DraggableView extends RelativeLayout {
    * Override method to configure the dragged view and secondView layout properly.
    */
   @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    if (isInEditMode())
+    if (isInEditMode() || drawAsIs)
       super.onLayout(changed, left, top, right, bottom);
     else if (isDragViewAtTop()) {
       dragView.layout(left, top, right, transformer.getOriginalHeight());
