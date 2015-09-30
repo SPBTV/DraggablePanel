@@ -3,7 +3,7 @@ apply plugin: 'checkstyle'
 
 dependencies {
   compile "com.android.support:appcompat-v7:${supportLibsVersion}"
-  compile 'com.nineoldandroids:library:2.4.0'
+  checkstyle "com.github.sevntu.checkstyle:sevntu-checks:${sevntuChecksVersion}"
 }
 
 android {
