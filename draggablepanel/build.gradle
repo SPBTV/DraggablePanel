@@ -2,20 +2,17 @@ apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 
 dependencies {
-    compile 'com.android.support:support-v4:20.0.0'
+  compile "com.android.support:appcompat-v7:${supportLibsVersion}"
   compile 'com.nineoldandroids:library:2.4.0'
 }
 
 android {
-  compileSdkVersion Integer.parseInt(project.ANDROID_COMPILE_SDK_VERSION)
-  buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
-
   defaultConfig {
-    versionName project.VERSION_NAME
-    versionCode Integer.parseInt(project.VERSION_CODE)
-
-    targetSdkVersion Integer.parseInt(project.ANDROID_TARGET_SDK_VERSION)
+    targetSdkVersion rootProject.ext.targetSdkVersion
   }
+
+  compileSdkVersion rootProject.ext.compileSdkVersion
+  buildToolsVersion rootProject.ext.buildToolsVersion
 
   sourceSets {
     main {
@@ -24,20 +21,8 @@ android {
       res.srcDirs = ['res']
     }
   }
-
-  lintOptions {
-    abortOnError false
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
   }
-}
-
-apply from: 'https://raw.github.com/jpardogo/gradle-mvn-push/master/gradle-mvn-push.gradle'
-
-
-task checkstyle(type: Checkstyle) {
-  configFile file('../config/checkstyle/checkstyle.xml')
-  source 'src/main/java'
-  include '**/*.java'
-  exclude '**/gen/**'
-
-  classpath = files()
 }

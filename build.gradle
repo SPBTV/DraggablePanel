@@ -3,22 +3,20 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:1.0.1'
+    classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
   }
 }
 
+ext {
+  compileSdkVersion = "${compileSdkVersion}" as Integer
+  targetSdkVersion = "${targetSdkVersion}" as Integer
+  buildToolsVersion = "${buildToolsVersion}"
+}
+
 allprojects {
-
-  version = VERSION_NAME
-  group = GROUP
-
   repositories {
     mavenCentral()
     mavenLocal()
   }
-}
-
-def isReleaseBuild() {
-  return version.contains("SNAPSHOT") == false
 }
 
