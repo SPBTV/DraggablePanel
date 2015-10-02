@@ -334,7 +334,8 @@ public class DraggableView extends RelativeLayout {
    * @return true if the view is going to process the touch event or false if not.
    */
   @Override public boolean onInterceptTouchEvent(MotionEvent ev) {
-    if (!isEnabled() || !isTouchEnabled() || drawAsIs) {      return false;
+    if (!isEnabled() || !isTouchEnabled() || drawAsIs) {
+      return false;
     }
     switch (MotionEventCompat.getActionMasked(ev) & MotionEventCompat.ACTION_MASK) {
       case MotionEvent.ACTION_CANCEL:
@@ -362,9 +363,10 @@ public class DraggableView extends RelativeLayout {
    * @return true if the touch event is realized over the drag or second view.
    */
   @Override public boolean onTouchEvent(MotionEvent ev) {
-if (!isEnabled() || !isTouchEnabled() || drawAsIs) {
+    if (!isEnabled() || !isTouchEnabled() || drawAsIs) {
       return false;
-    }    int actionMasked = MotionEventCompat.getActionMasked(ev);
+    }
+    int actionMasked = MotionEventCompat.getActionMasked(ev);
     if ((actionMasked & MotionEventCompat.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
       activePointerId = MotionEventCompat.getPointerId(ev, actionMasked);
     }
