@@ -91,6 +91,13 @@ public class DraggableView extends RelativeLayout {
   public void setDrawAsIs(boolean enabled) {
     if (enabled != drawAsIs) {
       drawAsIs = enabled;
+      dragView.setTop(getPaddingTop());
+      restoreAlpha();
+      changeDragViewScale();
+      changeDragViewPosition();
+      changeSecondViewAlpha();
+      changeSecondViewPosition();
+      changeBackgroundAlpha();
       requestLayout();
     }
   }
@@ -740,7 +747,8 @@ public class DraggableView extends RelativeLayout {
    * @return dragged view top divided by vertical drag range.
    */
   private float getVerticalDragOffset() {
-    return dragView.getTop() / getVerticalDragRange();
+    float verticalDragRange = getVerticalDragRange();
+    return verticalDragRange != 0 ? dragView.getTop() / verticalDragRange : 0;
   }
 
   /**
