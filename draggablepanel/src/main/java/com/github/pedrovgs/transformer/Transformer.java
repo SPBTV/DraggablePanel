@@ -129,6 +129,11 @@ public abstract class Transformer {
     return originalWidth;
   }
 
+  public void recalculateViewSize() {
+    originalHeight = 0;
+    originalWidth = 0;
+  }
+
   public boolean isViewAtTop() {
     return view.getTop() == 0;
   }

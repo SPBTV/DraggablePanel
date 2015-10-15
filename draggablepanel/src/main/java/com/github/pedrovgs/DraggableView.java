@@ -19,6 +19,7 @@ import com.github.pedrovgs.transformer.Transformer;
 import com.github.pedrovgs.transformer.TransformerFactory;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
@@ -247,6 +248,13 @@ public class DraggableView extends RelativeLayout {
     if (!isInEditMode() && viewDragHelper.continueSettling(true)) {
       ViewCompat.postInvalidateOnAnimation(this);
     }
+  }
+
+  @Override
+  protected void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+
+    transformer.recalculateViewSize();
   }
 
   /**
