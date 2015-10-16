@@ -16,6 +16,7 @@
 package com.github.pedrovgs;
 
 import android.support.v4.widget.ViewDragHelper;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -26,8 +27,8 @@ import android.view.View;
  */
 class DraggableViewCallback extends ViewDragHelper.Callback {
 
-  private static final int MINIMUM_DX_FOR_HORIZONTAL_DRAG = 5;
-  private static final int MINIMUM_DY_FOR_VERTICAL_DRAG = 15;
+  private static final int MINIMUM_DX_FOR_HORIZONTAL_DRAG = 15;
+  private static final int MINIMUM_DY_FOR_VERTICAL_DRAG = 10;
   private static final float X_MIN_VELOCITY = 1500;
   private static final float Y_MIN_VELOCITY = 1000;
 
@@ -106,6 +107,7 @@ class DraggableViewCallback extends ViewDragHelper.Callback {
    * @return the new clamped position for left.
    */
   @Override public int clampViewPositionHorizontal(View child, int left, int dx) {
+    Log.d("my log", "clamp horizontal left: " + left + " dx: " + dx);
     int newLeft = draggedView.getLeft();
     if ((draggableView.isMinimized() && Math.abs(dx) > MINIMUM_DX_FOR_HORIZONTAL_DRAG) || (
         draggableView.isDragViewAtBottom()
@@ -125,6 +127,7 @@ class DraggableViewCallback extends ViewDragHelper.Callback {
    * @return the new clamped position for top.
    */
   @Override public int clampViewPositionVertical(View child, int top, int dy) {
+    Log.d("my log", "clamp vertical top: " + top + " dy: " + dy);
     int newTop = draggableView.getHeight() - draggableView.getDraggedViewHeightPlusMarginTop();
     if (draggableView.isMinimized() && Math.abs(dy) >= MINIMUM_DY_FOR_VERTICAL_DRAG
         || (!draggableView.isMinimized() && !draggableView.isDragViewAtBottom())) {
