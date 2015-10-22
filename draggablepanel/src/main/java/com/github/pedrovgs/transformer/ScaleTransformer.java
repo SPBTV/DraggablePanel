@@ -15,7 +15,6 @@
  */
 package com.github.pedrovgs.transformer;
 
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -38,18 +37,8 @@ class ScaleTransformer extends Transformer {
      */
     @Override
     public void updateScale(float verticalDragOffset) {
-        float scaleX = getScaleX(verticalDragOffset);
-        Log.d("my log", "update scale: " + scaleX);
-        getView().setScaleX(scaleX);
+        getView().setScaleX(getScaleX(verticalDragOffset));
         getView().setScaleY(getScaleY(verticalDragOffset));
-    }
-
-    private float getScaleY(float verticalDragOffset) {
-        return 1 - verticalDragOffset / getYScaleFactor();
-    }
-
-    private float getScaleX(float verticalDragOffset) {
-        return 1 - verticalDragOffset / getXScaleFactor();
     }
 
     /**

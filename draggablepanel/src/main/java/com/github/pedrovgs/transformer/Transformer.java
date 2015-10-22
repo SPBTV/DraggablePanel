@@ -62,6 +62,18 @@ public abstract class Transformer {
         this.yScaleFactor = yScaleFactor;
     }
 
+    protected float getScaleY(float verticalDragOffset) {
+        return calculateScale(verticalDragOffset, getYScaleFactor());
+    }
+
+    protected float getScaleX(float verticalDragOffset) {
+        return calculateScale(verticalDragOffset, getXScaleFactor());
+    }
+
+    private float calculateScale(float verticalDragOffset, float scaleFactor) {
+        return ((scaleFactor - 1) * (1 - verticalDragOffset) + 1) / scaleFactor;
+    }
+
     public int getMarginRight() {
         return marginRight;
     }

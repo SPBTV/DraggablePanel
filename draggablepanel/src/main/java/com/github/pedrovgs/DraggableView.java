@@ -739,7 +739,15 @@ public class DraggableView extends RelativeLayout {
      */
     private float getVerticalDragOffset() {
         float verticalDragRange = getVerticalDragRange();
-        return verticalDragRange != 0 ? dragView.getTop() / verticalDragRange : 0;
+        float offset = verticalDragRange != 0 ? dragView.getTop() / verticalDragRange : 0;
+
+        if (offset > 1) {
+            return 1;
+        } else if (offset < 0) {
+            return 0;
+        } else {
+            return offset;
+        }
     }
 
     /**

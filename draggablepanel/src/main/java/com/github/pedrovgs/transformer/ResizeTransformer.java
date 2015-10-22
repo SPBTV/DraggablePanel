@@ -40,10 +40,8 @@ class ResizeTransformer extends Transformer {
      */
     @Override
     public void updateScale(float verticalDragOffset) {
-        layoutParams.width = (int) (getOriginalWidth() * (1
-                - verticalDragOffset / getXScaleFactor()));
-        layoutParams.height = (int) (getOriginalHeight() * (1
-                - verticalDragOffset / getYScaleFactor()));
+        layoutParams.width = (int) (getOriginalWidth() * getScaleX(verticalDragOffset));
+        layoutParams.height = (int) (getOriginalHeight() * getScaleY(verticalDragOffset));
 
         getView().setLayoutParams(layoutParams);
     }
