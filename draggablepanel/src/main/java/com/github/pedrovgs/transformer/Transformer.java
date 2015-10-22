@@ -40,13 +40,27 @@ public abstract class Transformer {
 
     private float xScaleFactor;
     private float yScaleFactor;
+    private int minHeight;
+    private int minWidth;
 
     public Transformer(View view, View parent) {
         this.view = view;
         this.parent = parent;
     }
 
+    public void setMinHeight(int minHeight) {
+        this.minHeight = minHeight;
+    }
+
+    public void setMinWidth(int minWidth) {
+        this.minWidth = minWidth;
+    }
+
     public float getXScaleFactor() {
+        if (minHeight > 0 && minWidth > 0) {
+            return getOriginalWidth() / (float) minWidth;
+        }
+
         return xScaleFactor;
     }
 
@@ -55,6 +69,10 @@ public abstract class Transformer {
     }
 
     public float getYScaleFactor() {
+        if (minHeight > 0 && minWidth > 0) {
+            return getOriginalHeight() / (float) minHeight;
+        }
+
         return yScaleFactor;
     }
 
@@ -70,7 +88,7 @@ public abstract class Transformer {
         return calculateScale(verticalDragOffset, getXScaleFactor());
     }
 
-    private float calculateScale(float verticalDragOffset, float scaleFactor) {
+    protected float calculateScale(float verticalDragOffset, float scaleFactor) {
         return ((scaleFactor - 1) * (1 - verticalDragOffset) + 1) / scaleFactor;
     }
 

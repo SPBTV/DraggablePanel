@@ -91,10 +91,6 @@ public class DraggableView extends RelativeLayout {
     private int lastNotifiedState;
 
     private OnStateChangedListener listener;
-    private int scaleXRes;
-    private int scaleYRes;
-    private int marginMinimizedRightRes;
-    private int marginMinimizedBottomRes;
 
     public DraggableView(Context context) {
         super(context);
@@ -250,7 +246,6 @@ public class DraggableView extends RelativeLayout {
         super.onConfigurationChanged(newConfig);
 
         configurationChanged = true;
-        updateTransformer();
     }
 
     /**
@@ -691,15 +686,6 @@ public class DraggableView extends RelativeLayout {
         TransformerFactory transformerFactory = new TransformerFactory();
         transformer = transformerFactory.getTransformer(topViewResize, dragView, this);
 
-        scaleXRes = attributes.getResourceId(R.styleable.draggable_view_top_view_x_scale_factor,
-                NO_ID);
-        scaleYRes = attributes.getResourceId(R.styleable.draggable_view_top_view_y_scale_factor,
-                NO_ID);
-        marginMinimizedRightRes = attributes.getResourceId(
-                R.styleable.draggable_view_top_view_margin_right, NO_ID);
-        marginMinimizedBottomRes = attributes.getResourceId(
-                R.styleable.draggable_view_top_view_margin_bottom, NO_ID);
-
         transformer.setXScaleFactor(
                 attributes.getFloat(R.styleable.draggable_view_top_view_x_scale_factor,
                         DEFAULT_SCALE_FACTOR));
@@ -712,23 +698,11 @@ public class DraggableView extends RelativeLayout {
         transformer.setMarginBottom(
                 attributes.getDimensionPixelSize(R.styleable.draggable_view_top_view_margin_bottom,
                         DEFAULT_TOP_VIEW_MARGIN));
-    }
 
-    private void updateTransformer() {
-        if (scaleXRes != NO_ID) {
-            transformer.setXScaleFactor(getFloatRes(scaleXRes));
-        }
-        if (scaleYRes != NO_ID) {
-            transformer.setYScaleFactor(getFloatRes(scaleYRes));
-        }
-        if (marginMinimizedBottomRes != NO_ID) {
-            transformer.setMarginBottom(
-                    getResources().getDimensionPixelSize(marginMinimizedBottomRes));
-        }
-        if (marginMinimizedRightRes != NO_ID) {
-            transformer.setMarginRight(
-                    getResources().getDimensionPixelSize(marginMinimizedRightRes));
-        }
+        transformer.setMinHeight(
+                attributes.getDimensionPixelSize(R.styleable.draggable_view_minimized_height, 0));
+        transformer.setMinWidth(
+                attributes.getDimensionPixelSize(R.styleable.draggable_view_minimized_width, 0));
     }
 
     private float getFloatRes(int id) {
@@ -836,6 +810,7 @@ public class DraggableView extends RelativeLayout {
     }
 
     public interface OnStateChangedListener {
+
         void onStateChanged(@State int state);
     }
 }
