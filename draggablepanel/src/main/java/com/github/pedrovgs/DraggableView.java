@@ -458,8 +458,7 @@ public class DraggableView extends RelativeLayout {
             dragView.layout(left, newPosition, right,
                     newPosition + transformer.getOriginalHeight());
             if (configurationChanged) {
-                secondView.layout(left, transformer.getOriginalHeight(), right,
-                        bottom);
+                secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
             }
             changeDragViewScale();
             changeDragViewPosition();

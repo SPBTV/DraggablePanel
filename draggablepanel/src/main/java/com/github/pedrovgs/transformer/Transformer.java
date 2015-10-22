@@ -56,6 +56,14 @@ public abstract class Transformer {
         this.minWidth = minWidth;
     }
 
+    protected int getMinHeight() {
+        return minHeight;
+    }
+
+    protected int getMinWidth() {
+        return minWidth;
+    }
+
     public float getXScaleFactor() {
         if (minHeight > 0 && minWidth > 0) {
             return getOriginalWidth() / (float) minWidth;

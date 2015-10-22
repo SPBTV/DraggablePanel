@@ -83,6 +83,10 @@ class ScaleTransformer extends Transformer {
      */
     @Override
     public int getMinHeightPlusMargin() {
+        if (getMinWidth() != 0 && getMinHeight() != 0) {
+            return getMinHeight() + getMarginBottom();
+        }
+
         return (int) (getOriginalHeight() * getScaleY(1)) + getMarginBottom();
     }
 
