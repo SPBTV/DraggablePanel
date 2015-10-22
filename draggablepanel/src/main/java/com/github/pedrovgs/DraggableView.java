@@ -228,10 +228,6 @@ public class DraggableView extends RelativeLayout {
         super.onConfigurationChanged(newConfig);
 
         configurationChanged = true;
-
-        if (!isMaximized()) {
-            dragView.setVisibility(View.INVISIBLE);
-        }
     }
 
     /**
@@ -438,16 +434,21 @@ public class DraggableView extends RelativeLayout {
             secondView.setY(transformer.getOriginalHeight());
             super.onLayout(changed, left, top, right, bottom);
         } else if (configurationChanged) {
-            dragView.layout(left, top, right, transformer.getOriginalHeight());
+            float verticalDragRange = getVerticalDragRange();
+            int newPosition = (int) verticalDragRange;
+
+            lastPosition = newPosition;
+            lastDragRange = verticalDragRange;
+            dragView.layout(left, newPosition, right, newPosition + transformer.getOriginalHeight());
             secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
-            minimize();
+            changeDragViewPosition();
         }
 
         configurationChanged = false;
     }
 
     public void onViewPositionChanged() {
-        if (isMinimized()) {
+        if (isMinimized() && !configurationChanged) {
             changeDragViewAlpha();
         } else {
             restoreAlpha();
@@ -465,10 +466,6 @@ public class DraggableView extends RelativeLayout {
 
         lastPosition = newPosition;
         lastDragRange = getVerticalDragRange();
-
-        if (lastPosition == lastDragRange && dragView.getVisibility() == View.INVISIBLE) {
-            dragView.setVisibility(View.VISIBLE);
-        }
     }
 
     /**
