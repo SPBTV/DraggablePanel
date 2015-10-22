@@ -29,7 +29,6 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -90,6 +89,8 @@ public class DraggableView extends RelativeLayout {
     private float lastDragRange;
     private int lastNotifiedState;
     private boolean stateChanged;
+    private int lastSlideTargetY;
+    private float lastSlideOffset;
 
     private OnStateChangedListener listener;
 
@@ -105,6 +106,15 @@ public class DraggableView extends RelativeLayout {
     public DraggableView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         initializeAttributes(attrs);
+        setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if (viewDragHelper.getViewDragState() == ViewDragHelper.STATE_SETTLING
+                        && lastSlideTargetY != calculateSlideTargetY(lastSlideOffset)) {
+                    smoothSlideTo(lastSlideOffset);
+                }
+            }
+        });
     }
 
     /**
@@ -709,12 +719,6 @@ public class DraggableView extends RelativeLayout {
                 attributes.getDimensionPixelSize(R.styleable.draggable_view_minimized_width, 0));
     }
 
-    private float getFloatRes(int id) {
-        TypedValue out = new TypedValue();
-        getResources().getValue(id, out, true);
-        return out.getFloat();
-    }
-
     /**
      * Initialize XML attributes.
      *
@@ -743,9 +747,11 @@ public class DraggableView extends RelativeLayout {
      * @return true if the view is slided.
      */
     private boolean smoothSlideTo(float slideOffset) {
-        final int topBound = getPaddingTop();
-        int x = (int) (slideOffset * (getWidth() - transformer.getMinWidthPlusMarginRight()));
-        int y = (int) (topBound + slideOffset * getVerticalDragRange());
+        int x = calculateSlideTargetX(slideOffset);
+        int y = calculateSlideTargetY(slideOffset);
+
+        lastSlideTargetY = y;
+        lastSlideOffset = slideOffset;
 
         if (viewDragHelper.smoothSlideViewTo(dragView, x, y)) {
             ViewCompat.postInvalidateOnAnimation(this);
@@ -753,6 +759,14 @@ public class DraggableView extends RelativeLayout {
         }
 
         return false;
+    }
+
+    private int calculateSlideTargetX(float slideOffset) {
+        return (int) (slideOffset * (getWidth() - transformer.getMinWidthPlusMarginRight()));
+    }
+
+    private int calculateSlideTargetY(float slideOffset) {
+        return (int) (getPaddingTop() + slideOffset * getVerticalDragRange());
     }
 
     /**
