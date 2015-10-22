@@ -15,6 +15,7 @@
  */
 package com.github.pedrovgs.transformer;
 
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -26,72 +27,82 @@ import android.view.View;
  */
 class ScaleTransformer extends Transformer {
 
-  ScaleTransformer(View view, View parent) {
-    super(view, parent);
-  }
+    ScaleTransformer(View view, View parent) {
+        super(view, parent);
+    }
 
-  /**
-   * Uses Nineoldandroids to change the scale.
-   *
-   * @param verticalDragOffset used to calculate the new scale.
-   */
-  @Override public void updateScale(float verticalDragOffset) {
-    getView().setScaleX(1 - verticalDragOffset / getXScaleFactor());
-    getView().setScaleY(1 - verticalDragOffset / getYScaleFactor());
-  }
+    /**
+     * Uses Nineoldandroids to change the scale.
+     *
+     * @param verticalDragOffset used to calculate the new scale.
+     */
+    @Override
+    public void updateScale(float verticalDragOffset) {
+        float scaleX = getScaleX(verticalDragOffset);
+        Log.d("my log", "update scale: " + scaleX);
+        getView().setScaleX(scaleX);
+        getView().setScaleY(getScaleY(verticalDragOffset));
+    }
 
-  /**
-   * Uses Nineoldandroids to change the position of the view.
-   *
-   * @param verticalDragOffset used to calculate the new position.
-   */
-  @Override public void updatePosition(float verticalDragOffset) {
-    getView().setPivotX(getView().getWidth() - getMarginRight());
-    getView().setPivotY(getView().getHeight() - getMarginBottom());
-  }
+    private float getScaleY(float verticalDragOffset) {
+        return 1 - verticalDragOffset / getYScaleFactor();
+    }
 
-  /**
-   * @return true if the right corner of the view matches with the parent view width.
-   */
-  @Override public boolean isViewAtRight() {
-    return getView().getRight() == getParentView().getWidth();
-  }
+    private float getScaleX(float verticalDragOffset) {
+        return 1 - verticalDragOffset / getXScaleFactor();
+    }
 
-  /**
-   * @return true if the bottom corner of the view matches with the parent view height.
-   */
-  @Override public boolean isViewAtBottom() {
-    return getView().getBottom() == getParentView().getHeight();
-  }
+    /**
+     * Uses Nineoldandroids to change the position of the view.
+     *
+     * @param verticalDragOffset used to calculate the new position.
+     */
+    @Override
+    public void updatePosition(float verticalDragOffset) {
+        getView().setPivotX(getView().getWidth() - (getMarginRight() / getScaleX(1)));
+        getView().setPivotY(0);
+    }
 
-  /**
-   * @return true if the left position of the view is to the left of sixty percent of the parent
-   * width.
-   */
-  @Override public boolean isNextToLeftBound() {
-    return (getView().getRight() - getMarginRight()) < getParentView().getWidth() * 0.6;
-  }
+    /**
+     * @return true if the right corner of the view matches with the parent view width.
+     */
+    @Override
+    public boolean isViewAtRight() {
+        return getView().getRight() == getParentView().getWidth();
+    }
 
-  /**
-   * @return true if the right position of the view is to the right of the one hundred twenty five
-   * five percent of the parent view width.
-   */
-  @Override public boolean isNextToRightBound() {
-    return (getView().getRight() - getMarginRight()) > getParentView().getWidth() * 1.25;
-  }
+    /**
+     * @return true if the left position of the view is to the left of sixty percent of the parent
+     * width.
+     */
+    @Override
+    public boolean isNextToLeftBound() {
+        return (getView().getRight() - getMarginRight()) < getParentView().getWidth() * 0.6;
+    }
 
-  /**
-   * @return min view height taking into account the configured margin.
-   */
-  @Override public int getMinHeightPlusMargin() {
-    return getView().getHeight();
-  }
+    /**
+     * @return true if the right position of the view is to the right of the one hundred twenty five
+     * five percent of the parent view width.
+     */
+    @Override
+    public boolean isNextToRightBound() {
+        return (getView().getRight() - getMarginRight()) > getParentView().getWidth() * 1.25;
+    }
 
-  /**
-   * @return min view width.
-   */
-  @Override public int getMinWidthPlusMarginRight() {
-    return getOriginalWidth();
-  }
+    /**
+     * @return min view height taking into account the configured margin.
+     */
+    @Override
+    public int getMinHeightPlusMargin() {
+        return (int) (getOriginalHeight() * getScaleY(1)) + getMarginBottom();
+    }
+
+    /**
+     * @return min view width.
+     */
+    @Override
+    public int getMinWidthPlusMarginRight() {
+        return getView().getWidth();
+    }
 
 }

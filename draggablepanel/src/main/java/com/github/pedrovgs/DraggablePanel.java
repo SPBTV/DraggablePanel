@@ -49,7 +49,6 @@ public class DraggablePanel extends FrameLayout {
   private FragmentManager fragmentManager;
   private Fragment topFragment;
   private Fragment bottomFragment;
-  private int topFragmentHeight;
   private int topFragmentMarginRight;
   private int topFragmentMarginBottom;
   private float xScaleFactor;
@@ -98,15 +97,6 @@ public class DraggablePanel extends FrameLayout {
    */
   public void setBottomFragment(Fragment bottomFragment) {
     this.bottomFragment = bottomFragment;
-  }
-
-  /**
-   * Configure the height associated to the top Fragment used inside the view as draggable element.
-   *
-   * @param topFragmentHeight in pixels.
-   */
-  public void setTopViewHeight(int topFragmentHeight) {
-    this.topFragmentHeight = topFragmentHeight;
   }
 
   /**
@@ -255,7 +245,6 @@ public class DraggablePanel extends FrameLayout {
 
     inflate(getContext(), R.layout.draggable_panel, this);
     draggableView = (DraggableView) findViewById(R.id.draggable_view);
-    draggableView.setTopViewHeight(topFragmentHeight);
     draggableView.setFragmentManager(fragmentManager);
     draggableView.attachTopFragment(topFragment);
     draggableView.setXTopViewScaleFactor(xScaleFactor);
@@ -313,9 +302,6 @@ public class DraggablePanel extends FrameLayout {
    */
   private void initializeAttrs(AttributeSet attrs) {
     TypedArray attributes = getContext().obtainStyledAttributes(attrs, R.styleable.draggable_panel);
-    this.topFragmentHeight =
-        attributes.getDimensionPixelSize(R.styleable.draggable_panel_top_fragment_height,
-            DEFAULT_TOP_FRAGMENT_HEIGHT);
     this.xScaleFactor =
         attributes.getFloat(R.styleable.draggable_panel_x_scale_factor, DEFAULT_SCALE_FACTOR);
     this.yScaleFactor =
