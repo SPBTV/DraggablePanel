@@ -28,6 +28,7 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -74,6 +75,10 @@ public class DraggableView extends RelativeLayout {
     private float lastDragRange;
 
     private DraggableListener listener;
+    private int scaleXRes;
+    private int scaleYRes;
+    private int marginMinimizedRightRes;
+    private int marginMinimizedBottomRes;
 
     public DraggableView(Context context) {
         super(context);
@@ -228,6 +233,7 @@ public class DraggableView extends RelativeLayout {
         super.onConfigurationChanged(newConfig);
 
         configurationChanged = true;
+        updateTransformer();
     }
 
     /**
@@ -439,8 +445,10 @@ public class DraggableView extends RelativeLayout {
 
             lastPosition = newPosition;
             lastDragRange = verticalDragRange;
-            dragView.layout(left, newPosition, right, newPosition + transformer.getOriginalHeight());
+            dragView.layout(left, newPosition, right,
+                    newPosition + transformer.getOriginalHeight());
             secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+            changeDragViewScale();
             changeDragViewPosition();
         }
 
@@ -516,6 +524,8 @@ public class DraggableView extends RelativeLayout {
      */
     void attachBottomFragment(Fragment bottomFragment) {
         addFragmentToView(R.id.second_view, bottomFragment);
+        //TODO: update scale and paddings when rotate
+        //TODO: update notifications
     }
 
     /**
@@ -666,6 +676,16 @@ public class DraggableView extends RelativeLayout {
                 DEFAULT_TOP_VIEW_RESIZE);
         TransformerFactory transformerFactory = new TransformerFactory();
         transformer = transformerFactory.getTransformer(topViewResize, dragView, this);
+
+        scaleXRes = attributes.getResourceId(R.styleable.draggable_view_top_view_x_scale_factor,
+                NO_ID);
+        scaleYRes = attributes.getResourceId(R.styleable.draggable_view_top_view_y_scale_factor,
+                NO_ID);
+        marginMinimizedRightRes = attributes.getResourceId(
+                R.styleable.draggable_view_top_view_margin_right, NO_ID);
+        marginMinimizedBottomRes = attributes.getResourceId(
+                R.styleable.draggable_view_top_view_margin_bottom, NO_ID);
+
         transformer.setXScaleFactor(
                 attributes.getFloat(R.styleable.draggable_view_top_view_x_scale_factor,
                         DEFAULT_SCALE_FACTOR));
@@ -678,6 +698,29 @@ public class DraggableView extends RelativeLayout {
         transformer.setMarginBottom(
                 attributes.getDimensionPixelSize(R.styleable.draggable_view_top_view_margin_bottom,
                         DEFAULT_TOP_VIEW_MARGIN));
+    }
+
+    private void updateTransformer() {
+        if (scaleXRes != NO_ID) {
+            transformer.setXScaleFactor(getFloatRes(scaleXRes));
+        }
+        if (scaleYRes != NO_ID) {
+            transformer.setYScaleFactor(getFloatRes(scaleYRes));
+        }
+        if (marginMinimizedBottomRes != NO_ID) {
+            transformer.setMarginBottom(
+                    getResources().getDimensionPixelSize(marginMinimizedBottomRes));
+        }
+        if (marginMinimizedRightRes != NO_ID) {
+            transformer.setMarginRight(
+                    getResources().getDimensionPixelSize(marginMinimizedRightRes));
+        }
+    }
+
+    private float getFloatRes(int id) {
+        TypedValue out = new TypedValue();
+        getResources().getValue(id, out, true);
+        return out.getFloat();
     }
 
     /**
