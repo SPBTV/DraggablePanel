@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MotionEventCompat;
@@ -32,6 +33,8 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Class created to extends a ViewGroup and simulate the YoutubeLayoutComponent
@@ -39,6 +42,18 @@ import android.widget.RelativeLayout;
  * @author Pedro Vicente Gómez Sánchez
  */
 public class DraggableView extends RelativeLayout {
+
+    public static final int STATE_UNKNOWN = -1;
+    public static final int STATE_MINIMIZED = 0;
+    public static final int STATE_DRAG = 1;
+    public static final int STATE_MAXIMIZED = 2;
+    public static final int STATE_CLOSED = 3;
+
+    @IntDef({STATE_UNKNOWN, STATE_MINIMIZED, STATE_DRAG, STATE_MAXIMIZED, STATE_CLOSED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface State {
+
+    }
 
     private static final int DEFAULT_SCALE_FACTOR = 2;
     private static final int DEFAULT_TOP_VIEW_MARGIN = 30;
@@ -73,8 +88,9 @@ public class DraggableView extends RelativeLayout {
     private boolean configurationChanged;
     private int lastPosition;
     private float lastDragRange;
+    private int lastNotifiedState;
 
-    private DraggableListener listener;
+    private OnStateChangedListener listener;
     private int scaleXRes;
     private int scaleYRes;
     private int marginMinimizedRightRes;
@@ -213,8 +229,9 @@ public class DraggableView extends RelativeLayout {
      * the
      * right or closed to the left.
      */
-    public void setDraggableListener(DraggableListener listener) {
+    public void setStateListener(OnStateChangedListener listener) {
         this.listener = listener;
+        lastNotifiedState = STATE_UNKNOWN;
     }
 
     /**
@@ -241,7 +258,6 @@ public class DraggableView extends RelativeLayout {
      */
     public void maximize() {
         smoothSlideTo(SLIDE_TOP);
-        notifyMaximizeToListener();
     }
 
     /**
@@ -250,7 +266,6 @@ public class DraggableView extends RelativeLayout {
      */
     public void minimize() {
         smoothSlideTo(SLIDE_BOTTOM);
-        notifyMinimizeToListener();
     }
 
     /**
@@ -261,7 +276,6 @@ public class DraggableView extends RelativeLayout {
         if (viewDragHelper.smoothSlideViewTo(dragView, transformer.getOriginalWidth(),
                 getHeight() - transformer.getMinHeightPlusMargin())) {
             ViewCompat.postInvalidateOnAnimation(this);
-            notifyCloseToRightListener();
         }
     }
 
@@ -273,7 +287,7 @@ public class DraggableView extends RelativeLayout {
         if (viewDragHelper.smoothSlideViewTo(dragView, -transformer.getOriginalWidth(),
                 getHeight() - transformer.getMinHeightPlusMargin())) {
             ViewCompat.postInvalidateOnAnimation(this);
-            notifyCloseToLeftListener();
+            notifyListenerIfStateChanged();
         }
     }
 
@@ -474,6 +488,8 @@ public class DraggableView extends RelativeLayout {
 
         lastPosition = newPosition;
         lastDragRange = getVerticalDragRange();
+
+        notifyListenerIfStateChanged();
     }
 
     /**
@@ -524,8 +540,6 @@ public class DraggableView extends RelativeLayout {
      */
     void attachBottomFragment(Fragment bottomFragment) {
         addFragmentToView(R.id.second_view, bottomFragment);
-        //TODO: update scale and paddings when rotate
-        //TODO: update notifications
     }
 
     /**
@@ -799,43 +813,29 @@ public class DraggableView extends RelativeLayout {
         return getHeight() - transformer.getMinHeightPlusMargin();
     }
 
-    /**
-     * Notify te view is maximized to the DraggableListener
-     */
-    private void notifyMaximizeToListener() {
-        if (listener != null) {
-            listener.onMaximized();
+    private void notifyListenerIfStateChanged() {
+        @State int newState;
+        if (isMinimized()) {
+            newState = STATE_MINIMIZED;
+        } else if (isMaximized()) {
+            newState = STATE_MAXIMIZED;
+        } else if (isClosed()) {
+            newState = STATE_CLOSED;
+        } else {
+            newState = STATE_DRAG;
         }
-    }
 
-    /**
-     * Notify te view is minimized to the DraggableListener
-     */
-    private void notifyMinimizeToListener() {
-        if (listener != null) {
-            listener.onMinimized();
-        }
-    }
-
-    /**
-     * Notify te view is closed to the right to the DraggableListener
-     */
-    private void notifyCloseToRightListener() {
-        if (listener != null) {
-            listener.onClosedToRight();
-        }
-    }
-
-    /**
-     * Notify te view is closed to the left to the DraggableListener
-     */
-    private void notifyCloseToLeftListener() {
-        if (listener != null) {
-            listener.onClosedToLeft();
+        if (listener != null && lastNotifiedState != newState) {
+            lastNotifiedState = newState;
+            listener.onStateChanged(newState);
         }
     }
 
     public int getDraggedViewHeightPlusMarginTop() {
         return transformer.getMinHeightPlusMargin();
+    }
+
+    public interface OnStateChangedListener {
+        void onStateChanged(@State int state);
     }
 }

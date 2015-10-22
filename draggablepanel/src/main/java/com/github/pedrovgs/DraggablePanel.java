@@ -44,7 +44,7 @@ public class DraggablePanel extends FrameLayout {
   private static final boolean DEFAULT_TOP_FRAGMENT_RESIZE = false;
 
   private DraggableView draggableView;
-  private DraggableListener draggableListener;
+  private DraggableView.OnStateChangedListener mStateChangedListener;
 
   private FragmentManager fragmentManager;
   private Fragment topFragment;
@@ -189,8 +189,8 @@ public class DraggablePanel extends FrameLayout {
    * Configure the DraggableListener that is going to be invoked when the view be minimized,
    * maximized, closed to the left or right.
    */
-  public void setDraggableListener(DraggableListener draggableListener) {
-    this.draggableListener = draggableListener;
+  public void setStateChangedListener(DraggableView.OnStateChangedListener listener) {
+    this.mStateChangedListener = listener;
   }
 
   /**
@@ -252,7 +252,7 @@ public class DraggablePanel extends FrameLayout {
     draggableView.setTopViewMarginRight(topFragmentMarginRight);
     draggableView.setTopViewMarginBottom(topFragmentMarginBottom);
     draggableView.attachBottomFragment(bottomFragment);
-    draggableView.setDraggableListener(draggableListener);
+    draggableView.setStateListener(mStateChangedListener);
     draggableView.setHorizontalAlphaEffectEnabled(enableHorizontalAlphaEffect);
     draggableView.setClickToMaximizeEnabled(enableClickToMaximize);
     draggableView.setClickToMinimizeEnabled(enableClickToMinimize);
