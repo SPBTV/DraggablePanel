@@ -89,6 +89,7 @@ public class DraggableView extends RelativeLayout {
     private int lastPosition;
     private float lastDragRange;
     private int lastNotifiedState;
+    private boolean stateChanged;
 
     private OnStateChangedListener listener;
 
@@ -282,7 +283,7 @@ public class DraggableView extends RelativeLayout {
         if (viewDragHelper.smoothSlideViewTo(dragView, -transformer.getOriginalWidth(),
                 getHeight() - transformer.getMinHeightPlusMargin())) {
             ViewCompat.postInvalidateOnAnimation(this);
-            notifyListenerIfStateChanged();
+            onStateChanged();
         }
     }
 
@@ -448,20 +449,24 @@ public class DraggableView extends RelativeLayout {
         } else if (isMaximized()) {
             secondView.setY(transformer.getOriginalHeight());
             super.onLayout(changed, left, top, right, bottom);
-        } else if (configurationChanged) {
+        } else if (configurationChanged || stateChanged) {
             float verticalDragRange = getVerticalDragRange();
-            int newPosition = (int) verticalDragRange;
+            int newPosition = configurationChanged ? (int) verticalDragRange : dragView.getTop();
 
             lastPosition = newPosition;
             lastDragRange = verticalDragRange;
             dragView.layout(left, newPosition, right,
                     newPosition + transformer.getOriginalHeight());
-            secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+            if (configurationChanged) {
+                secondView.layout(left, transformer.getOriginalHeight(), right,
+                        bottom);
+            }
             changeDragViewScale();
             changeDragViewPosition();
         }
 
         configurationChanged = false;
+        stateChanged = false;
     }
 
     public void onViewPositionChanged() {
@@ -484,7 +489,7 @@ public class DraggableView extends RelativeLayout {
         lastPosition = newPosition;
         lastDragRange = getVerticalDragRange();
 
-        notifyListenerIfStateChanged();
+        onStateChanged();
     }
 
     /**
@@ -787,7 +792,7 @@ public class DraggableView extends RelativeLayout {
         return getHeight() - transformer.getMinHeightPlusMargin();
     }
 
-    private void notifyListenerIfStateChanged() {
+    private void onStateChanged() {
         @State int newState;
         if (isMinimized()) {
             newState = STATE_MINIMIZED;
@@ -801,6 +806,7 @@ public class DraggableView extends RelativeLayout {
 
         if (listener != null && lastNotifiedState != newState) {
             lastNotifiedState = newState;
+            stateChanged = true;
             listener.onStateChanged(newState);
         }
     }
