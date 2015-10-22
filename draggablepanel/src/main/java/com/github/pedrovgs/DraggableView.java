@@ -239,6 +239,7 @@ public class DraggableView extends RelativeLayout {
     public void setStateListener(OnStateChangedListener listener) {
         this.listener = listener;
         lastNotifiedState = STATE_UNKNOWN;
+        onStateChanged();
     }
 
     /**
