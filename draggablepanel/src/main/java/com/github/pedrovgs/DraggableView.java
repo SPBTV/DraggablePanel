@@ -810,12 +810,12 @@ public class DraggableView extends RelativeLayout {
 
     private void onStateChanged() {
         @State int newState;
-        if (isClosed()) {
+        if (isMaximized()) {
+            newState = STATE_MAXIMIZED;
+        } else if (isClosed()) {
             newState = STATE_CLOSED;
         } else if (isMinimized()) {
             newState = STATE_MINIMIZED;
-        } else if (isMaximized()) {
-            newState = STATE_MAXIMIZED;
         } else {
             newState = STATE_DRAG;
         }
