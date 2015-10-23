@@ -87,7 +87,7 @@ public class DraggableView extends RelativeLayout {
     private boolean configurationChanged;
     private int lastPosition;
     private float lastDragRange;
-    private int lastNotifiedState;
+    @State private int lastNotifiedState;
     private boolean stateChanged;
     private int lastSlideTargetY;
     private float lastSlideOffset;
@@ -237,9 +237,11 @@ public class DraggableView extends RelativeLayout {
      * right or closed to the left.
      */
     public void setStateListener(OnStateChangedListener listener) {
-        this.listener = listener;
-        lastNotifiedState = STATE_UNKNOWN;
-        onStateChanged();
+        if (this.listener != listener) {
+            this.listener = listener;
+            lastNotifiedState = STATE_UNKNOWN;
+            onStateChanged();
+        }
     }
 
     /**
@@ -460,7 +462,7 @@ public class DraggableView extends RelativeLayout {
         } else if (isMaximized()) {
             secondView.setY(transformer.getOriginalHeight());
             super.onLayout(changed, left, top, right, bottom);
-        } else if (configurationChanged || stateChanged) {
+        } else if ((configurationChanged || stateChanged) && lastNotifiedState != STATE_CLOSED) {
             float verticalDragRange = getVerticalDragRange();
             int newPosition = configurationChanged ? (int) verticalDragRange : dragView.getTop();
 
@@ -808,12 +810,12 @@ public class DraggableView extends RelativeLayout {
 
     private void onStateChanged() {
         @State int newState;
-        if (isMinimized()) {
+        if (isClosed()) {
+            newState = STATE_CLOSED;
+        } else if (isMinimized()) {
             newState = STATE_MINIMIZED;
         } else if (isMaximized()) {
             newState = STATE_MAXIMIZED;
-        } else if (isClosed()) {
-            newState = STATE_CLOSED;
         } else {
             newState = STATE_DRAG;
         }
