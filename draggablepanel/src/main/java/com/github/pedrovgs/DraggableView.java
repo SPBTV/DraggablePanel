@@ -73,6 +73,7 @@ public class DraggableView extends RelativeLayout {
 
     private View dragView;
     private View secondView;
+    private View resizableView;
     private TypedArray attributes;
 
     private FragmentManager fragmentManager;
@@ -472,9 +473,9 @@ public class DraggableView extends RelativeLayout {
                     newPosition + transformer.getOriginalHeight());
             if (configurationChanged) {
                 secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+                viewDragHelper.abort();
             }
             changeDragViewScale();
-            changeDragViewPosition();
         }
 
         configurationChanged = false;
@@ -487,7 +488,6 @@ public class DraggableView extends RelativeLayout {
         } else {
             restoreAlpha();
             changeDragViewScale();
-            changeDragViewPosition();
             changeSecondViewAlpha();
             changeSecondViewPosition();
             changeBackgroundAlpha();
@@ -524,8 +524,11 @@ public class DraggableView extends RelativeLayout {
                 R.id.drag_view);
         int secondViewId = attributes.getResourceId(R.styleable.draggable_view_bottom_view_id,
                 R.id.second_view);
+        int resizableViewId = attributes.getResourceId(
+                R.styleable.draggable_view_resizable_top_view_id, dragViewId);
         dragView = findViewById(dragViewId);
         secondView = findViewById(secondViewId);
+        resizableView = findViewById(resizableViewId);
     }
 
     /**
@@ -555,15 +558,6 @@ public class DraggableView extends RelativeLayout {
     }
 
     /**
-     * Modify dragged view pivot based on the dragged view vertical position to simulate a
-     * horizontal
-     * displacement while the view is dragged.
-     */
-    void changeDragViewPosition() {
-        transformer.updatePosition(getVerticalDragOffset());
-    }
-
-    /**
      * Modify secondView position to be always below dragged view.
      */
     void changeSecondViewPosition() {
@@ -574,7 +568,7 @@ public class DraggableView extends RelativeLayout {
      * Modify dragged view scale based on the dragged view vertical position and the scale factor.
      */
     void changeDragViewScale() {
-        transformer.updateScale(getVerticalDragOffset());
+        transformer.updateScaleAndPosition(getVerticalDragOffset());
     }
 
     /**
@@ -701,7 +695,7 @@ public class DraggableView extends RelativeLayout {
         boolean topViewResize = attributes.getBoolean(R.styleable.draggable_view_top_view_resize,
                 DEFAULT_TOP_VIEW_RESIZE);
         TransformerFactory transformerFactory = new TransformerFactory();
-        transformer = transformerFactory.getTransformer(topViewResize, dragView, this);
+        transformer = transformerFactory.getTransformer(topViewResize, dragView, resizableView, this);
 
         transformer.setXScaleFactor(
                 attributes.getFloat(R.styleable.draggable_view_top_view_x_scale_factor,
@@ -750,22 +744,17 @@ public class DraggableView extends RelativeLayout {
      * @return true if the view is slided.
      */
     private boolean smoothSlideTo(float slideOffset) {
-        int x = calculateSlideTargetX(slideOffset);
         int y = calculateSlideTargetY(slideOffset);
 
         lastSlideTargetY = y;
         lastSlideOffset = slideOffset;
 
-        if (viewDragHelper.smoothSlideViewTo(dragView, x, y)) {
+        if (viewDragHelper.smoothSlideViewTo(dragView, 0, y)) {
             ViewCompat.postInvalidateOnAnimation(this);
             return true;
         }
 
         return false;
-    }
-
-    private int calculateSlideTargetX(float slideOffset) {
-        return (int) (slideOffset * (getWidth() - transformer.getMinWidthPlusMarginRight()));
     }
 
     private int calculateSlideTargetY(float slideOffset) {

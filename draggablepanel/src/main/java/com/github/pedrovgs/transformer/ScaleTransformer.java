@@ -26,76 +26,16 @@ import android.view.View;
  */
 class ScaleTransformer extends Transformer {
 
-    ScaleTransformer(View view, View parent) {
-        super(view, parent);
+    ScaleTransformer(View dragView, View resizeView, View parent) {
+        super(dragView, resizeView, parent);
     }
 
-    /**
-     * Uses Nineoldandroids to change the scale.
-     *
-     * @param verticalDragOffset used to calculate the new scale.
-     */
     @Override
-    public void updateScale(float verticalDragOffset) {
-        getView().setScaleX(getScaleX(verticalDragOffset));
-        getView().setScaleY(getScaleY(verticalDragOffset));
-    }
-
-    /**
-     * Uses Nineoldandroids to change the position of the view.
-     *
-     * @param verticalDragOffset used to calculate the new position.
-     */
-    @Override
-    public void updatePosition(float verticalDragOffset) {
-        getView().setPivotX(getView().getWidth() - (getMarginRight() / getScaleX(1)));
-        getView().setPivotY(0);
-    }
-
-    /**
-     * @return true if the right corner of the view matches with the parent view width.
-     */
-    @Override
-    public boolean isViewAtRight() {
-        return getView().getRight() == getParentView().getWidth();
-    }
-
-    /**
-     * @return true if the left position of the view is to the left of sixty percent of the parent
-     * width.
-     */
-    @Override
-    public boolean isNextToLeftBound() {
-        return (getView().getRight() - getMarginRight()) < getParentView().getWidth() * 0.6;
-    }
-
-    /**
-     * @return true if the right position of the view is to the right of the one hundred twenty five
-     * five percent of the parent view width.
-     */
-    @Override
-    public boolean isNextToRightBound() {
-        return (getView().getRight() - getMarginRight()) > getParentView().getWidth() * 1.25;
-    }
-
-    /**
-     * @return min view height taking into account the configured margin.
-     */
-    @Override
-    public int getMinHeightPlusMargin() {
-        if (getMinWidth() != 0 && getMinHeight() != 0) {
-            return getMinHeight() + getMarginBottom();
-        }
-
-        return (int) (getOriginalHeight() * getScaleY(1)) + getMarginBottom();
-    }
-
-    /**
-     * @return min view width.
-     */
-    @Override
-    public int getMinWidthPlusMarginRight() {
-        return getView().getWidth();
+    public void updateScaleAndPosition(float verticalDragOffset) {
+        getResizeView().setScaleX(getScaleX(verticalDragOffset));
+        getResizeView().setScaleY(getScaleY(verticalDragOffset));
+        getResizeView().setPivotX(getDragView().getWidth() - (getMarginRight() / getScaleX(1)));
+        getResizeView().setPivotY(0);
     }
 
 }

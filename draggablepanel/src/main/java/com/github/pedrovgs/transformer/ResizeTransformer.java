@@ -16,7 +16,8 @@
 package com.github.pedrovgs.transformer;
 
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 /**
  * Transformer extension created to resize the view instead of scale it as the other
@@ -26,11 +27,11 @@ import android.widget.RelativeLayout;
  */
 class ResizeTransformer extends Transformer {
 
-    private final RelativeLayout.LayoutParams layoutParams;
+    private final FrameLayout.LayoutParams layoutParams;
 
-    ResizeTransformer(View view, View parent) {
-        super(view, parent);
-        layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+    ResizeTransformer(View dragView, View resizeView, View parent) {
+        super(dragView, resizeView, parent);
+        layoutParams = (FrameLayout.LayoutParams) resizeView.getLayoutParams();
     }
 
     /**
@@ -39,71 +40,21 @@ class ResizeTransformer extends Transformer {
      * @param verticalDragOffset used to calculate the new size.
      */
     @Override
-    public void updateScale(float verticalDragOffset) {
-        layoutParams.width = (int) (getOriginalWidth() * getScaleX(verticalDragOffset));
-        layoutParams.height = (int) (getOriginalHeight() * getScaleY(verticalDragOffset));
+    public void updateScaleAndPosition(float verticalDragOffset) {
+        if (verticalDragOffset == 0) {
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        } else {
+            layoutParams.width = (int) (getOriginalWidth() * getScaleX(verticalDragOffset));
+            layoutParams.height = (int) (getOriginalHeight() * getScaleY(verticalDragOffset));
+        }
 
-        getView().setLayoutParams(layoutParams);
-    }
+        layoutParams.bottomMargin = (int) (getMarginBottom() * verticalDragOffset);
+        layoutParams.rightMargin = (int) (getMarginRight() * verticalDragOffset);
 
-
-    /**
-     * Changes X view position using layout() method.
-     *
-     * @param verticalDragOffset used to calculate the new X position.
-     */
-    @Override
-    public void updatePosition(float verticalDragOffset) {
-        int right = getViewRightPosition(verticalDragOffset);
-        int left = right - layoutParams.width;
-        int top = getView().getTop();
-        int bottom = top + layoutParams.height;
-
-        getView().layout(left, top, right, bottom);
-    }
-
-
-    /**
-     * @return true if the right position of the view plus the right margin is equals to the parent
-     * width.
-     */
-    @Override
-    public boolean isViewAtRight() {
-        return getView().getRight() + getMarginRight() == getParentView().getWidth();
-    }
-
-    /**
-     * @return true if the left position of the view is to the right of the seventy five percent of
-     * the parent view width.
-     */
-    @Override
-    public boolean isNextToRightBound() {
-        return (getView().getLeft() - getMarginRight()) > getParentView().getWidth() * 0.75;
-    }
-
-    /**
-     * @return true if the left position of the view is to the left of the twenty five percent of
-     * the parent width.
-     */
-    @Override
-    public boolean isNextToLeftBound() {
-        return (getView().getLeft() - getMarginRight()) < getParentView().getWidth() * 0.05;
-    }
-
-    /**
-     * Uses the Y scale factor to calculate the min possible height.
-     */
-    @Override
-    public int getMinHeightPlusMargin() {
-        return (int) (getOriginalHeight() * (1 - 1 / getYScaleFactor()) + getMarginBottom());
-    }
-
-    /**
-     * Uses the X scale factor to calculate the min possible width.
-     */
-    @Override
-    public int getMinWidthPlusMarginRight() {
-        return (int) (getOriginalWidth() * (1 - 1 / getXScaleFactor()) + getMarginRight());
+        getResizeView().setLayoutParams(layoutParams);
+        getDragView().layout(getDragView().getLeft(), getDragView().getTop(),
+                getDragView().getRight(), getDragView().getBottom());
     }
 
     /**

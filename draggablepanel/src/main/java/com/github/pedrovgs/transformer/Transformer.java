@@ -19,20 +19,23 @@ import android.view.View;
 
 /**
  * Abstract class created to be implemented by different classes are going to change the size of a
- * view. The most basic one is going to scale the view and the most complex used with VideoView is
- * going to change the size of the view.
+ * dragView. The most basic one is going to scale the dragView and the most complex used with
+ * VideoView is
+ * going to change the size of the dragView.
  * <p/>
- * The view used in this class has to be contained by a RelativeLayout.
+ * The dragView used in this class has to be contained by a RelativeLayout.
  * <p/>
- * This class also provide information about the size of the view and the position because
- * different Transformer implementations could change the size of the view but not the position,
+ * This class also provide information about the size of the dragView and the position because
+ * different Transformer implementations could change the size of the dragView but not the
+ * position,
  * like ScaleTransformer does.
  *
  * @author Pedro Vicente Gómez Sánchez
  */
 public abstract class Transformer {
 
-    private final View view;
+    private final View dragView;
+    private final View resizeView;
     private final View parent;
 
     private int marginRight;
@@ -43,8 +46,9 @@ public abstract class Transformer {
     private int minHeight;
     private int minWidth;
 
-    public Transformer(View view, View parent) {
-        this.view = view;
+    public Transformer(View dragView, View resizeView, View parent) {
+        this.dragView = dragView;
+        this.resizeView = resizeView;
         this.parent = parent;
     }
 
@@ -116,51 +120,71 @@ public abstract class Transformer {
         this.marginBottom = Math.round(marginBottom);
     }
 
-    protected View getView() {
-        return view;
+    protected View getDragView() {
+        return dragView;
+    }
+
+    protected View getResizeView() {
+        return resizeView;
     }
 
     protected View getParentView() {
         return parent;
     }
 
-    public abstract void updatePosition(float verticalDragOffset);
-
-    public abstract void updateScale(float verticalDragOffset);
+    public abstract void updateScaleAndPosition(float verticalDragOffset);
 
     /**
-     * @return height of the view before it has change the size.
+     * @return height of the dragView before it has change the size.
      */
     public int getOriginalHeight() {
-        return view.getMeasuredHeight();
+        return dragView.getMeasuredHeight();
     }
 
     /**
-     * @return width of the view before it has change the size.
+     * @return width of the dragView before it has change the size.
      */
     public int getOriginalWidth() {
-        return view.getMeasuredWidth();
+        return dragView.getMeasuredWidth();
     }
 
     public boolean isAboveTheMiddle() {
         int parentHeight = parent.getHeight();
-        float viewYPosition = view.getY() + (view.getHeight() * 0.5f);
+        float viewYPosition = dragView.getY() + (dragView.getHeight() * 0.5f);
         return viewYPosition < (parentHeight * 0.5);
     }
 
-    public abstract boolean isViewAtRight();
-
-    public abstract boolean isNextToRightBound();
-
-    public abstract boolean isNextToLeftBound();
+    /**
+     * @return true if the right corner of the view matches with the parent view width.
+     */
+    public boolean isViewAtRight() {
+        return getDragView().getRight() == getParentView().getWidth();
+    }
 
     /**
-     * @return min possible height, after apply the transformation, plus the margin right.
+     * @return true if the left position of the view is to the left of sixty percent of the parent
+     * width.
      */
-    public abstract int getMinHeightPlusMargin();
+    public boolean isNextToLeftBound() {
+        return (getDragView().getRight() - getMarginRight()) < getParentView().getWidth() * 0.6;
+    }
 
     /**
-     * @return min possible width, after apply the transformation.
+     * @return true if the right position of the view is to the right of the one hundred twenty five
+     * five percent of the parent view width.
      */
-    public abstract int getMinWidthPlusMarginRight();
+    public boolean isNextToRightBound() {
+        return (getDragView().getRight() - getMarginRight()) > getParentView().getWidth() * 1.25;
+    }
+
+    /**
+     * @return min view height taking into account the configured margin.
+     */
+    public int getMinHeightPlusMargin() {
+        if (getMinWidth() != 0 && getMinHeight() != 0) {
+            return getMinHeight() + getMarginBottom();
+        }
+
+        return (int) (getOriginalHeight() * getScaleY(1)) + getMarginBottom();
+    }
 }
