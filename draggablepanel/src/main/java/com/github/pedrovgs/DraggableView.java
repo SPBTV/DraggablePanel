@@ -397,19 +397,21 @@ public class DraggableView extends RelativeLayout {
         if (activePointerId == INVALID_POINTER) {
             return false;
         }
-        viewDragHelper.processTouchEvent(ev);
+        boolean isResizeViewHit = isViewHit(resizableView, (int) ev.getX(), (int) ev.getY());
+        if (isResizeViewHit || ev.getAction() != MotionEvent.ACTION_DOWN) {
+            viewDragHelper.processTouchEvent(ev);
+        }
         if (isClosed()) {
             return false;
         }
-        boolean isDragViewHit = isViewHit(dragView, (int) ev.getX(), (int) ev.getY());
         boolean isSecondViewHit = isViewHit(secondView, (int) ev.getX(), (int) ev.getY());
-        analyzeTouchToMaximizeIfNeeded(ev, isDragViewHit);
+        analyzeTouchToMaximizeIfNeeded(ev, isResizeViewHit);
         if (isMaximized()) {
             dragView.dispatchTouchEvent(ev);
         } else {
             dragView.dispatchTouchEvent(cloneMotionEventWithAction(ev, MotionEvent.ACTION_CANCEL));
         }
-        return isDragViewHit || isSecondViewHit;
+        return isResizeViewHit || isSecondViewHit;
     }
 
     private void analyzeTouchToMaximizeIfNeeded(MotionEvent ev, boolean isDragViewHit) {
