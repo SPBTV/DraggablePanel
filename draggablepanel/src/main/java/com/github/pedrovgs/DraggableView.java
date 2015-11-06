@@ -88,7 +88,8 @@ public class DraggableView extends RelativeLayout {
     private boolean configurationChanged;
     private int lastPosition;
     private float lastDragRange;
-    @State private int lastNotifiedState;
+    @State
+    private int lastNotifiedState;
     private boolean stateChanged;
     private int lastSlideTargetY;
     private float lastSlideOffset;
@@ -359,24 +360,32 @@ public class DraggableView extends RelativeLayout {
         if (!isEnabled() || !isTouchEnabled()) {
             return false;
         }
-        switch (MotionEventCompat.getActionMasked(ev) & MotionEventCompat.ACTION_MASK) {
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                viewDragHelper.cancel();
-                return false;
-            case MotionEvent.ACTION_DOWN:
-                int index = MotionEventCompat.getActionIndex(ev);
-                activePointerId = MotionEventCompat.getPointerId(ev, index);
-                if (activePointerId == INVALID_POINTER) {
+
+        try {
+            switch (MotionEventCompat.getActionMasked(ev) & MotionEventCompat.ACTION_MASK) {
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    viewDragHelper.cancel();
                     return false;
-                }
-                break;
-            default:
-                break;
+                case MotionEvent.ACTION_DOWN:
+                    int index = MotionEventCompat.getActionIndex(ev);
+                    activePointerId = MotionEventCompat.getPointerId(ev, index);
+                    if (activePointerId == INVALID_POINTER) {
+                        return false;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            boolean interceptTap = viewDragHelper.isViewUnder(dragView, (int) ev.getX(),
+                    (int) ev.getY());
+            return viewDragHelper.shouldInterceptTouchEvent(ev) || interceptTap;
+        } catch (Exception ignored) {
+
         }
-        boolean interceptTap = viewDragHelper.isViewUnder(dragView, (int) ev.getX(),
-                (int) ev.getY());
-        return viewDragHelper.shouldInterceptTouchEvent(ev) || interceptTap;
+
+        return false;
     }
 
     /**
@@ -390,28 +399,40 @@ public class DraggableView extends RelativeLayout {
         if (!isEnabled() || !isTouchEnabled()) {
             return false;
         }
-        int actionMasked = MotionEventCompat.getActionMasked(ev);
-        if ((actionMasked & MotionEventCompat.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
-            activePointerId = MotionEventCompat.getPointerId(ev, actionMasked);
+
+        try {
+            int actionMasked = MotionEventCompat.getActionMasked(ev);
+            if ((actionMasked & MotionEventCompat.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
+                activePointerId = MotionEventCompat.getPointerId(ev, actionMasked);
+            }
+
+            if (activePointerId == INVALID_POINTER) {
+                return false;
+            }
+
+            boolean isResizeViewHit = isViewHit(resizableView, (int) ev.getX(), (int) ev.getY());
+            if (isResizeViewHit || ev.getAction() != MotionEvent.ACTION_DOWN) {
+                viewDragHelper.processTouchEvent(ev);
+            }
+
+            if (isClosed()) {
+                return false;
+            }
+
+            boolean isSecondViewHit = isViewHit(secondView, (int) ev.getX(), (int) ev.getY());
+            analyzeTouchToMaximizeIfNeeded(ev, isResizeViewHit);
+            if (isMaximized()) {
+                dragView.dispatchTouchEvent(ev);
+            } else {
+                dragView.dispatchTouchEvent(
+                        cloneMotionEventWithAction(ev, MotionEvent.ACTION_CANCEL));
+            }
+
+            return isResizeViewHit || isSecondViewHit;
+        } catch (Exception ignored) {
+
         }
-        if (activePointerId == INVALID_POINTER) {
-            return false;
-        }
-        boolean isResizeViewHit = isViewHit(resizableView, (int) ev.getX(), (int) ev.getY());
-        if (isResizeViewHit || ev.getAction() != MotionEvent.ACTION_DOWN) {
-            viewDragHelper.processTouchEvent(ev);
-        }
-        if (isClosed()) {
-            return false;
-        }
-        boolean isSecondViewHit = isViewHit(secondView, (int) ev.getX(), (int) ev.getY());
-        analyzeTouchToMaximizeIfNeeded(ev, isResizeViewHit);
-        if (isMaximized()) {
-            dragView.dispatchTouchEvent(ev);
-        } else {
-            dragView.dispatchTouchEvent(cloneMotionEventWithAction(ev, MotionEvent.ACTION_CANCEL));
-        }
-        return isResizeViewHit || isSecondViewHit;
+        return false;
     }
 
     private void analyzeTouchToMaximizeIfNeeded(MotionEvent ev, boolean isDragViewHit) {
@@ -697,7 +718,8 @@ public class DraggableView extends RelativeLayout {
         boolean topViewResize = attributes.getBoolean(R.styleable.draggable_view_top_view_resize,
                 DEFAULT_TOP_VIEW_RESIZE);
         TransformerFactory transformerFactory = new TransformerFactory();
-        transformer = transformerFactory.getTransformer(topViewResize, dragView, resizableView, this);
+        transformer = transformerFactory.getTransformer(topViewResize, dragView, resizableView,
+                this);
 
         transformer.setXScaleFactor(
                 attributes.getFloat(R.styleable.draggable_view_top_view_x_scale_factor,
