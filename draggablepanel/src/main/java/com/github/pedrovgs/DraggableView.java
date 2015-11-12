@@ -311,6 +311,10 @@ public class DraggableView extends RelativeLayout {
         return lastPosition == lastDragRange && lastDragRange != 0;
     }
 
+    public boolean isMinimized(int maxOffset) {
+        return lastDragRange != 0 && Math.abs(lastPosition - lastDragRange) < maxOffset;
+    }
+
     /**
      * Checks if the top view is maximized.
      *
@@ -318,6 +322,10 @@ public class DraggableView extends RelativeLayout {
      */
     public boolean isMaximized() {
         return lastPosition == 0;
+    }
+
+    public boolean isMaximized(int maxOffset) {
+        return lastPosition < maxOffset;
     }
 
     /**
@@ -443,9 +451,10 @@ public class DraggableView extends RelativeLayout {
             case MotionEvent.ACTION_UP:
                 float clickOffset = ev.getX() - lastTouchActionDownXPosition;
                 if (shouldMaximizeOnClick(ev, clickOffset, isDragViewHit)) {
-                    if (isMinimized() && isClickToMaximizeEnabled()) {
+                    if (isMinimized(MIN_SLIDING_DISTANCE_ON_CLICK) && isClickToMaximizeEnabled()) {
                         maximize();
-                    } else if (isMaximized() && isClickToMinimizeEnabled()) {
+                    } else if (isMaximized(MIN_SLIDING_DISTANCE_ON_CLICK)
+                            && isClickToMinimizeEnabled()) {
                         minimize();
                     }
                 }
@@ -457,8 +466,7 @@ public class DraggableView extends RelativeLayout {
 
     public boolean shouldMaximizeOnClick(MotionEvent ev, float deltaX, boolean isDragViewHit) {
         return (Math.abs(deltaX) < MIN_SLIDING_DISTANCE_ON_CLICK)
-                && ev.getAction() != MotionEvent.ACTION_MOVE
-                && isDragViewHit;
+                && ev.getAction() != MotionEvent.ACTION_MOVE && isDragViewHit;
     }
 
     /**
@@ -687,10 +695,8 @@ public class DraggableView extends RelativeLayout {
         this.getLocationOnScreen(parentLocation);
         int screenX = parentLocation[0] + x;
         int screenY = parentLocation[1] + y;
-        return screenX >= viewLocation[0]
-                && screenX < viewLocation[0] + view.getWidth()
-                && screenY >= viewLocation[1]
-                && screenY < viewLocation[1] + view.getHeight();
+        return screenX >= viewLocation[0] && screenX < viewLocation[0] + view.getWidth()
+                && screenY >= viewLocation[1] && screenY < viewLocation[1] + view.getHeight();
     }
 
     /**
